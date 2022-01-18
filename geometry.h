@@ -42,9 +42,22 @@ inline Point operator+(Point const &lhs, Vector const &rhs) noexcept
     return {lhs.x+rhs.dx, lhs.y+rhs.dy};
 }
 
-
-
 inline double crossProduct(Vector const &lhs, Vector const &rhs) noexcept
 {
     return lhs.dx * rhs.dy  - lhs.dy * rhs.dx;
+}
+
+inline bool onLeft(Point const &start,  Point const &end, Point const &p) noexcept
+{
+    auto const v1=end-start;
+    auto const v2=p-start;
+
+    return crossProduct(v2,v1) > 0;
+}
+
+inline bool inside(Triangle const &triangle,  Point const &p) noexcept
+{
+    return (    onLeft(triangle.a,triangle.b,p)
+            &&  onLeft(triangle.b,triangle.c,p)
+            &&  onLeft(triangle.c,triangle.a,p));
 }

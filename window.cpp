@@ -76,7 +76,7 @@ LRESULT CALLBACK proc(HWND h, UINT m, WPARAM w, LPARAM l)
 
 
     case WM_REFRESH:
-        InvalidateRect(h,nullptr,FALSE);
+        InvalidateRect(h,nullptr,TRUE);
         return 0;
     
     case WM_NCHITTEST:

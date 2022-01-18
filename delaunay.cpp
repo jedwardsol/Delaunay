@@ -44,8 +44,10 @@ void arrowLine(Gdiplus::Graphics    &graphics,
 void paint(HDC dc, RECT const &client)
 {
     constexpr auto              circleSize{4};
-                                                     //  A    R    G    B
-    static Gdiplus::SolidBrush  redBrush{Gdiplus::Color(255, 255,   0,   0)};
+                                                       //  A    R    G    B
+    static Gdiplus::SolidBrush  redBrush  {Gdiplus::Color(255, 255,   0,   0)};
+    static Gdiplus::SolidBrush  greenBrush{Gdiplus::Color(255,   0, 255,   0)};
+
     static Gdiplus::Pen         whitePen{Gdiplus::Color(255, 255, 255, 255)};
     static Gdiplus::Pen         redPen  {Gdiplus::Color(255, 255,   0,   0)};
     static Gdiplus::Pen         greenPen{Gdiplus::Color(255,   0, 255,   0)};
@@ -56,13 +58,33 @@ void paint(HDC dc, RECT const &client)
 
     graphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
 
-    for(auto const point : points)
+    if(triangles.empty())
     {
-        auto p = toClient(client,point);
+        for(auto const point : points)
+        {
+            auto p = toClient(client,point);
 
-        graphics.FillEllipse(&redBrush, p.X-circleSize/2,p.Y-circleSize/2,circleSize,circleSize);
-        graphics.DrawEllipse(&whitePen, p.X-circleSize/2,p.Y-circleSize/2,circleSize,circleSize);
+            graphics.FillEllipse(&redBrush, p.X-circleSize/2,p.Y-circleSize/2,circleSize,circleSize);
+            graphics.DrawEllipse(&whitePen, p.X-circleSize/2,p.Y-circleSize/2,circleSize,circleSize);
+        }
     }
+    else
+    {
+        for(auto const point : points)
+        {
+            auto p = toClient(client,point);
+
+            if(inside(triangles.front(), point))
+            {
+                graphics.FillEllipse(&greenBrush, p.X-circleSize/2,p.Y-circleSize/2,circleSize,circleSize);
+            }
+            else
+            {
+                graphics.FillEllipse(&redBrush, p.X-circleSize/2,p.Y-circleSize/2,circleSize,circleSize);
+            }
+        }
+    }
+
 
     for(auto const triangle : triangles)
     {
@@ -79,22 +101,32 @@ void click(Point const &p)
 {
     points.push_back(p);
 
-    if(points.size()==3)
+    if( triangles.empty())
     {
-        Vector  v01 = points[1]-points[0];
-        Vector  v02 = points[2]-points[0];
-
-        auto  x = crossProduct(v01,v02);
-
-        if(x < 0)
+        if(points.size()==3)
         {
-            triangles.emplace_back(points[0],points[1],points[2]);
-        }
-        else
-        {
-            triangles.emplace_back(points[0],points[2],points[1]);
+            Vector  v01 = points[1]-points[0];
+            Vector  v02 = points[2]-points[0];
+
+            auto  x = crossProduct(v01,v02);
+
+            if(x < 0)
+            {
+                triangles.emplace_back(points[0],points[1],points[2]);
+            }
+            else
+            {
+                triangles.emplace_back(points[0],points[2],points[1]);
+            }
+
+            points.clear();
         }
     }
+    else
+    {
+
+    }
+
 }
 
 
