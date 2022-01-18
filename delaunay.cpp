@@ -2,14 +2,17 @@
 #include <gdiplus.h>
 #pragma comment (lib,"Gdiplus.lib")
 
-
 #include <vector>
+#include <stdexcept>
+#include <algorithm>
 
 #include "window.h"
 #include "geometry.h"
 
 std::vector<Point>    points;
 std::vector<Triangle> triangles;
+
+
 
 
 Gdiplus::Point toClient(RECT const &client, Point const &point)
@@ -35,103 +38,127 @@ void arrowLine(Gdiplus::Graphics    &graphics,
     pen.SetEndCap(Gdiplus::LineCapNoAnchor);
     graphics.DrawLine(&pen,  a,b);
 
-    pen.SetWidth(4);
+    pen.SetWidth(2);
     pen.SetEndCap(Gdiplus::LineCapArrowAnchor);
     graphics.DrawLine(&pen,  a,middle);
-
 }
+
+void line(Gdiplus::Graphics    &graphics,
+               Gdiplus::Pen         &pen,
+               RECT const           &client,
+               Point const          &start,
+               Point const          &end)
+{
+    auto a      = toClient(client,start);
+    auto b      = toClient(client,end);
+
+    graphics.DrawLine(&pen,  a,b);
+}
+
+
+
 
 void paint(HDC dc, RECT const &client)
 {
     constexpr auto              circleSize{4};
-                                                       //  A    R    G    B
-    static Gdiplus::SolidBrush  redBrush  {Gdiplus::Color(255, 255,   0,   0)};
-    static Gdiplus::SolidBrush  greenBrush{Gdiplus::Color(255,   0, 255,   0)};
-
-    static Gdiplus::Pen         whitePen{Gdiplus::Color(255, 255, 255, 255)};
-    static Gdiplus::Pen         redPen  {Gdiplus::Color(255, 255,   0,   0)};
-    static Gdiplus::Pen         greenPen{Gdiplus::Color(255,   0, 255,   0)};
-    static Gdiplus::Pen         bluePen {Gdiplus::Color(255,   0,   0, 255)};
+                                                       
+    static Gdiplus::SolidBrush  whiteBrush  {Gdiplus::Color::White};
+    static Gdiplus::SolidBrush  redBrush    {Gdiplus::Color::Red};
+    static Gdiplus::SolidBrush  greenBrush  {Gdiplus::Color::Green};
+    static Gdiplus::Pen         whitePen    {Gdiplus::Color::White};
+    static Gdiplus::Pen         redPen      {Gdiplus::Color::Red};
+    static Gdiplus::Pen         greenPen    {Gdiplus::Color::Green};
+    static Gdiplus::Pen         bluePen     {Gdiplus::Color::Blue};
 
 
     Gdiplus::Graphics graphics{dc};
 
     graphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
 
-    if(triangles.empty())
-    {
-        for(auto const point : points)
-        {
-            auto p = toClient(client,point);
 
-            graphics.FillEllipse(&redBrush, p.X-circleSize/2,p.Y-circleSize/2,circleSize,circleSize);
-            graphics.DrawEllipse(&whitePen, p.X-circleSize/2,p.Y-circleSize/2,circleSize,circleSize);
-        }
+
+    for(auto const &triangle : triangles)
+    {
+        line(graphics,whitePen, client,triangle.a,triangle.b);
+        line(graphics,whitePen, client,triangle.b,triangle.c);
+        line(graphics,whitePen, client,triangle.c,triangle.a);
+    }
+
+    for(auto const &point : points)
+    {
+        auto p = toClient(client,point);
+
+        graphics.FillEllipse(&whiteBrush, p.X-circleSize/2,p.Y-circleSize/2,circleSize,circleSize);
+    }
+}
+
+
+
+void insertTriangle(Point const &a,Point const &b,Point const &c)
+{
+    Vector const ab = b-a;
+    Vector const ac = c-a;
+
+    auto  x = crossProduct(ab,ac);
+
+    if(x < 0)
+    {
+        triangles.emplace_back(a,b,c);
     }
     else
     {
-        for(auto const point : points)
-        {
-            auto p = toClient(client,point);
-
-            if(inside(triangles.front(), point))
-            {
-                graphics.FillEllipse(&greenBrush, p.X-circleSize/2,p.Y-circleSize/2,circleSize,circleSize);
-            }
-            else
-            {
-                graphics.FillEllipse(&redBrush, p.X-circleSize/2,p.Y-circleSize/2,circleSize,circleSize);
-            }
-        }
+        triangles.emplace_back(a,c,b);
     }
+}
+
+
+
+void click(Point const &point)
+{
+    points.push_back(point);
 
 
     for(auto const triangle : triangles)
     {
-        arrowLine(graphics,redPen,  client,triangle.a,triangle.b);
-        arrowLine(graphics,greenPen,client,triangle.b,triangle.c);
-        arrowLine(graphics,bluePen, client,triangle.c,triangle.a);
-    }
-}
-
-
-
-
-void click(Point const &p)
-{
-    points.push_back(p);
-
-    if( triangles.empty())
-    {
-        if(points.size()==3)
+        if(point.inside(triangle))
         {
-            Vector  v01 = points[1]-points[0];
-            Vector  v02 = points[2]-points[0];
+            insertTriangle(triangle.a,triangle.b, point);
+            insertTriangle(triangle.b,triangle.c, point);
+            insertTriangle(triangle.c,triangle.a, point);
 
-            auto  x = crossProduct(v01,v02);
+            auto erase = std::ranges::remove(triangles,triangle);
 
-            if(x < 0)
-            {
-                triangles.emplace_back(points[0],points[1],points[2]);
-            }
-            else
-            {
-                triangles.emplace_back(points[0],points[2],points[1]);
-            }
+            triangles.erase(erase.begin(),erase.end());
 
-            points.clear();
+            return;
         }
     }
-    else
-    {
 
-    }
-
+    throw std::runtime_error("containing triangle not found");
 }
+
+void makeSuperTriangle()
+{
+/*
+    Point  a{ 0.1,  0.9 };
+    Point  b{ 0.9,  0.9 };
+    Point  c{ 0.5,  0.1 };
+*/
+
+    Point  a{ -90,  90 };
+    Point  b{  90,  90 };
+    Point  c{ 0.5, -90 };
+
+    insertTriangle(a,b,c);
+}
+
 
 
 int main()
 {
+    makeSuperTriangle();
+        
+
     createWindow();
     windowMessageLoop();
 }

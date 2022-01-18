@@ -13,7 +13,6 @@ using namespace std::literals;
 
 namespace
 {
-HWND                theWindow   {};
 constexpr int       WM_REFRESH  {WM_APP};
 constexpr auto      windowStyle { WS_OVERLAPPEDWINDOW | WS_VISIBLE    };
 
@@ -21,13 +20,13 @@ constexpr auto      windowStyle { WS_OVERLAPPEDWINDOW | WS_VISIBLE    };
 
 void paint(HWND h,WPARAM w, LPARAM l)
 {
-    PAINTSTRUCT paint;
+    PAINTSTRUCT paint{};
     BeginPaint(h,&paint);
 
-    RECT  r{};
-    GetClientRect(h,&r);
+    RECT        client{};
+    GetClientRect(h,&client);
 
-    ::paint(paint.hdc, r);    
+    ::paint(paint.hdc, client);    
     
     EndPaint(h,&paint);
 }
@@ -39,7 +38,6 @@ void click(HWND h, LPARAM l)
 
     RECT  r{};
     GetClientRect(h,&r);
-
 
     ::click( { x/(r.right-r.left),   y/(r.bottom-r.top) } );    
 
@@ -99,13 +97,13 @@ LRESULT CALLBACK proc(HWND h, UINT m, WPARAM w, LPARAM l)
 
 void createWindow()
 {
-   Gdiplus::GdiplusStartupInput gdiplusStartupInput{};
-   ULONG_PTR                    gdiplusToken{};
+    Gdiplus::GdiplusStartupInput gdiplusStartupInput{};
+    ULONG_PTR                    gdiplusToken{};
 
-   Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+    Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
    
    
-   WNDCLASSA    Class
+    WNDCLASSA    Class
     {
         CS_OWNDC | CS_VREDRAW | CS_HREDRAW,
         proc,
@@ -124,19 +122,19 @@ void createWindow()
         throw std::system_error{ static_cast<int>(GetLastError()), std::system_category(), "RegisterClass"};
     }
 
-    theWindow = CreateWindowA(Class.lpszClassName,
-                              "Delaunay",
-                              windowStyle,
-                              CW_USEDEFAULT,CW_USEDEFAULT,
-                              10,10,
-                              nullptr,
-                              nullptr,
-                              GetModuleHandle(nullptr),
-                              nullptr);
+    auto theWindow = CreateWindowA(Class.lpszClassName,
+                                   "Delaunay",
+                                   windowStyle,
+                                   CW_USEDEFAULT,CW_USEDEFAULT,
+                                   10,10,
+                                   nullptr,
+                                   nullptr,
+                                   GetModuleHandle(nullptr),
+                                   nullptr);
 
     if(theWindow==nullptr)
     {
-        throw std::system_error{ static_cast<int>(GetLastError()), std::system_category(), "RegisterClass"};
+        throw std::system_error{ static_cast<int>(GetLastError()), std::system_category(), "CreateWindow"};
     }
 
 }

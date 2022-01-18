@@ -1,9 +1,17 @@
 #pragma once
 
+
+struct Triangle;
+
 struct Point            // 0 to 1
 {
     double x;
     double y;
+
+    bool inside(Triangle const &) const noexcept;
+
+    bool operator==(Point const &) const noexcept = default;
+
 };
 
 struct Vector
@@ -17,26 +25,30 @@ struct Triangle
     Point a;
     Point b;
     Point c;
+
+    bool operator==(Triangle const &) const noexcept = default;
 };
 
-
+// Vector from 2 points
 inline Vector operator-(Point const &lhs, Point const &rhs) noexcept
 {
     return {lhs.x-rhs.x, lhs.y-rhs.y};
 }
 
-
+// Scale vector
 inline Vector operator/(Vector const &lhs, double scale) noexcept
 {
     return {lhs.dx/scale, lhs.dy/scale};
 }
 
+// Scale vector
 inline Vector operator*(Vector const &lhs, double scale) noexcept
 {
     return {lhs.dx*scale, lhs.dy*scale};
 }
 
 
+// Point from tranlating another point
 inline Point operator+(Point const &lhs, Vector const &rhs) noexcept
 {
     return {lhs.x+rhs.dx, lhs.y+rhs.dy};
@@ -55,9 +67,10 @@ inline bool onLeft(Point const &start,  Point const &end, Point const &p) noexce
     return crossProduct(v2,v1) > 0;
 }
 
-inline bool inside(Triangle const &triangle,  Point const &p) noexcept
+
+inline bool Point::inside(Triangle const &triangle) const noexcept
 {
-    return (    onLeft(triangle.a,triangle.b,p)
-            &&  onLeft(triangle.b,triangle.c,p)
-            &&  onLeft(triangle.c,triangle.a,p));
+    return (    onLeft(triangle.a,triangle.b, *this)
+            &&  onLeft(triangle.b,triangle.c, *this)
+            &&  onLeft(triangle.c,triangle.a, *this));
 }
