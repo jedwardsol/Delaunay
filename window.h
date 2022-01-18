@@ -2,12 +2,7 @@
 
 #include <Windows.h>
 
-
-struct Point
-{
-    double x;
-    double y;
-};
+#include "geometry.h"
 
 
 void createWindow();

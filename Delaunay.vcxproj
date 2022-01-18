@@ -147,6 +147,7 @@
     <ClCompile Include="window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="geometry.h" />
     <ClInclude Include="print.h" />
     <ClInclude Include="window.h" />
   </ItemGroup>

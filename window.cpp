@@ -1,8 +1,7 @@
-#define NOMINMAX
-#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#include <gdiplus.h>
+#pragma comment (lib,"Gdiplus.lib")
 
-#include <cassert>
 #include <thread>
 #include <chrono>
 using namespace std::literals;
@@ -59,9 +58,7 @@ LRESULT CALLBACK proc(HWND h, UINT m, WPARAM w, LPARAM l)
 
         AdjustWindowRect(&client,windowStyle,FALSE);
         SetWindowPos(h, nullptr,0,0, client.right-client.left, client.bottom-client.top, SWP_NOMOVE|SWP_NOZORDER);
-        GetClientRect(h,&client);
         SetForegroundWindow(h);
-
         return 0;
     }
 
@@ -89,7 +86,7 @@ LRESULT CALLBACK proc(HWND h, UINT m, WPARAM w, LPARAM l)
         break;
 
     default:
-        print("msg {:#x}\n",m);
+        //print("msg {:#x}\n",m);
         break;
     }
 
@@ -102,7 +99,13 @@ LRESULT CALLBACK proc(HWND h, UINT m, WPARAM w, LPARAM l)
 
 void createWindow()
 {
-    WNDCLASSA    Class
+   Gdiplus::GdiplusStartupInput gdiplusStartupInput{};
+   ULONG_PTR                    gdiplusToken{};
+
+   Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+   
+   
+   WNDCLASSA    Class
     {
         CS_OWNDC | CS_VREDRAW | CS_HREDRAW,
         proc,
