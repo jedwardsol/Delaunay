@@ -12,9 +12,9 @@ using namespace std::literals;
 
 
 
-
 namespace
 {
+HWND                theWindow{};
 constexpr int       WM_REFRESH  {WM_APP};
 constexpr auto      windowStyle { WS_OVERLAPPEDWINDOW | WS_VISIBLE    };
 
@@ -123,15 +123,15 @@ void createWindow()
         throw std::system_error{ static_cast<int>(GetLastError()), std::system_category(), "RegisterClass"};
     }
 
-    auto theWindow = CreateWindowA(Class.lpszClassName,
-                                   "Delaunay",
-                                   windowStyle,
-                                   CW_USEDEFAULT,CW_USEDEFAULT,
-                                   10,10,
-                                   nullptr,
-                                   nullptr,
-                                   GetModuleHandle(nullptr),
-                                   nullptr);
+    theWindow = CreateWindowA(Class.lpszClassName,
+                              "Delaunay",
+                              windowStyle,
+                              CW_USEDEFAULT,CW_USEDEFAULT,
+                              10,10,
+                              nullptr,
+                              nullptr,
+                              GetModuleHandle(nullptr),
+                              nullptr);
 
     if(theWindow==nullptr)
     {
@@ -150,3 +150,12 @@ void windowMessageLoop()
         DispatchMessage(&msg);
     }
 }
+
+
+void redraw()
+{
+    PostMessage(theWindow,WM_REFRESH,0,0);
+//    Sleep(100);
+
+}
+

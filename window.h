@@ -10,3 +10,4 @@ void windowMessageLoop();
 
 void paint(HDC, RECT const &);
 void addPoint(Point const &);
+void redraw();

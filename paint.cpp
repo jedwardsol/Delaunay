@@ -41,16 +41,30 @@ void arrowLine(Gdiplus::Graphics    &graphics,
     graphics.DrawLine(&pen,  a,middle);
 }
 
+
+bool inRect(RECT const &rect, Gdiplus::Point const &p)
+{
+    return    p.X >= rect.left
+           && p.X <  rect.right
+           && p.Y >= rect.top
+           && p.X <  rect.bottom;
+}
+
 void line(Gdiplus::Graphics    &graphics,
-               Gdiplus::Pen         &pen,
-               RECT const           &client,
-               Point const          &start,
-               Point const          &end)
+          Gdiplus::Pen         &pen,
+          RECT const           &client,
+          Point const          &start,
+          Point const          &end)
 {
     auto a      = toClient(client,start);
     auto b      = toClient(client,end);
 
-    graphics.DrawLine(&pen,  a,b);
+    if(   inRect(client,a)
+       && inRect(client,b)) 
+    {
+        graphics.DrawLine(&pen,  a,b);
+    }
+
 }
 
 
