@@ -21,6 +21,9 @@
     <ClCompile Include="delaunay.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="paint.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="window.h">
@@ -30,6 +33,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="geometry.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="delaunay.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

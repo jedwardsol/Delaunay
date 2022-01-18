@@ -144,9 +144,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="delaunay.cpp" />
+    <ClCompile Include="paint.cpp" />
     <ClCompile Include="window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="delaunay.h" />
     <ClInclude Include="geometry.h" />
     <ClInclude Include="print.h" />
     <ClInclude Include="window.h" />

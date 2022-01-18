@@ -15,83 +15,6 @@ std::vector<Triangle> triangles;
 
 
 
-Gdiplus::Point toClient(RECT const &client, Point const &point)
-{
-    auto x = static_cast<int>(point.x * (client.right -client.left));
-    auto y = static_cast<int>(point.y * (client.bottom-client.top));
-
-    return {x,y};
-}
-
-
-void arrowLine(Gdiplus::Graphics    &graphics,
-               Gdiplus::Pen         &pen,
-               RECT const           &client,
-               Point const          &start,
-               Point const          &end)
-{
-    auto a      = toClient(client,start);
-    auto b      = toClient(client,end);
-    auto middle = toClient(client,start+(end-start)/5);
-
-    pen.SetWidth(1);
-    pen.SetEndCap(Gdiplus::LineCapNoAnchor);
-    graphics.DrawLine(&pen,  a,b);
-
-    pen.SetWidth(2);
-    pen.SetEndCap(Gdiplus::LineCapArrowAnchor);
-    graphics.DrawLine(&pen,  a,middle);
-}
-
-void line(Gdiplus::Graphics    &graphics,
-               Gdiplus::Pen         &pen,
-               RECT const           &client,
-               Point const          &start,
-               Point const          &end)
-{
-    auto a      = toClient(client,start);
-    auto b      = toClient(client,end);
-
-    graphics.DrawLine(&pen,  a,b);
-}
-
-
-
-
-void paint(HDC dc, RECT const &client)
-{
-    constexpr auto              circleSize{4};
-                                                       
-    static Gdiplus::SolidBrush  whiteBrush  {Gdiplus::Color::White};
-    static Gdiplus::SolidBrush  redBrush    {Gdiplus::Color::Red};
-    static Gdiplus::SolidBrush  greenBrush  {Gdiplus::Color::Green};
-    static Gdiplus::Pen         whitePen    {Gdiplus::Color::White};
-    static Gdiplus::Pen         redPen      {Gdiplus::Color::Red};
-    static Gdiplus::Pen         greenPen    {Gdiplus::Color::Green};
-    static Gdiplus::Pen         bluePen     {Gdiplus::Color::Blue};
-
-
-    Gdiplus::Graphics graphics{dc};
-
-    graphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
-
-
-
-    for(auto const &triangle : triangles)
-    {
-        line(graphics,whitePen, client,triangle.a,triangle.b);
-        line(graphics,whitePen, client,triangle.b,triangle.c);
-        line(graphics,whitePen, client,triangle.c,triangle.a);
-    }
-
-    for(auto const &point : points)
-    {
-        auto p = toClient(client,point);
-
-        graphics.FillEllipse(&whiteBrush, p.X-circleSize/2,p.Y-circleSize/2,circleSize,circleSize);
-    }
-}
-
 
 
 void insertTriangle(Point const &a,Point const &b,Point const &c)
@@ -113,51 +36,60 @@ void insertTriangle(Point const &a,Point const &b,Point const &c)
 
 
 
-void click(Point const &point)
+Triangle    findTriangle(Point const &point)
 {
-    points.push_back(point);
-
-
     for(auto const triangle : triangles)
     {
         if(point.inside(triangle))
         {
-            insertTriangle(triangle.a,triangle.b, point);
-            insertTriangle(triangle.b,triangle.c, point);
-            insertTriangle(triangle.c,triangle.a, point);
-
-            auto erase = std::ranges::remove(triangles,triangle);
-
-            triangles.erase(erase.begin(),erase.end());
-
-            return;
+            return triangle;
         }
     }
 
     throw std::runtime_error("containing triangle not found");
 }
 
+
+void addPoint(Point const &point)
+{
+    points.push_back(point);
+
+
+    auto const container = findTriangle(point);
+
+
+    insertTriangle(container.a,container.b, point);
+    insertTriangle(container.b,container.c, point);
+    insertTriangle(container.c,container.a, point);
+
+    auto erase = std::ranges::remove(triangles,container);
+    triangles.erase(erase.begin(),erase.end());
+
+
+
+}
+
 void makeSuperTriangle()
 {
-/*
-    Point  a{ 0.1,  0.9 };
-    Point  b{ 0.9,  0.9 };
-    Point  c{ 0.5,  0.1 };
-*/
-
+#if defined _DEBUG
+    Point  a{ 0.01,  0.99 };
+    Point  b{ 0.99,  0.99 };
+    Point  c{ 0.5,   0.01 };
+#else
     Point  a{ -90,  90 };
     Point  b{  90,  90 };
     Point  c{ 0.5, -90 };
+#endif
 
     insertTriangle(a,b,c);
 }
 
 
 
+
 int main()
 {
     makeSuperTriangle();
-        
 
     createWindow();
     windowMessageLoop();

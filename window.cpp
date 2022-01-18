@@ -11,6 +11,8 @@ using namespace std::literals;
 #include "print.h"
 
 
+
+
 namespace
 {
 constexpr int       WM_REFRESH  {WM_APP};
@@ -39,10 +41,9 @@ void click(HWND h, LPARAM l)
     RECT  r{};
     GetClientRect(h,&r);
 
-    ::click( { x/(r.right-r.left),   y/(r.bottom-r.top) } );    
+    addPoint( { x/(r.right-r.left),   y/(r.bottom-r.top) } );    
 
     PostMessage(h,WM_REFRESH,0,0);
-
 }
 
 

@@ -9,4 +9,4 @@ void createWindow();
 void windowMessageLoop();
 
 void paint(HDC, RECT const &);
-void click(Point const &);
+void addPoint(Point const &);
