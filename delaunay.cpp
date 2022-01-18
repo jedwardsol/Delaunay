@@ -41,7 +41,7 @@ void arrowLine(Gdiplus::Graphics    &graphics,
 
 }
 
-void paint(HDC dc, RECT const &r)
+void paint(HDC dc, RECT const &client)
 {
     constexpr auto              circleSize{4};
                                                      //  A    R    G    B
@@ -58,7 +58,7 @@ void paint(HDC dc, RECT const &r)
 
     for(auto const point : points)
     {
-        auto p = toClient(r,point);
+        auto p = toClient(client,point);
 
         graphics.FillEllipse(&redBrush, p.X-circleSize/2,p.Y-circleSize/2,circleSize,circleSize);
         graphics.DrawEllipse(&whitePen, p.X-circleSize/2,p.Y-circleSize/2,circleSize,circleSize);
@@ -66,9 +66,9 @@ void paint(HDC dc, RECT const &r)
 
     for(auto const triangle : triangles)
     {
-        arrowLine(graphics,redPen,r,triangle.a,triangle.b);
-        arrowLine(graphics,greenPen,r,triangle.b,triangle.c);
-        arrowLine(graphics,bluePen,r,triangle.c,triangle.a);
+        arrowLine(graphics,redPen,  client,triangle.a,triangle.b);
+        arrowLine(graphics,greenPen,client,triangle.b,triangle.c);
+        arrowLine(graphics,bluePen, client,triangle.c,triangle.a);
     }
 }
 
@@ -81,12 +81,12 @@ void click(Point const &p)
 
     if(points.size()==3)
     {
-        Vector  v01 = points[0]-points[1];
-        Vector  v03 = points[0]-points[2];
+        Vector  v01 = points[1]-points[0];
+        Vector  v02 = points[2]-points[0];
 
-        auto  x = crossProduct(v01,v03);
+        auto  x = crossProduct(v01,v02);
 
-        if(x > 0)
+        if(x < 0)
         {
             triangles.emplace_back(points[0],points[1],points[2]);
         }
